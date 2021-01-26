@@ -1,5 +1,5 @@
 import {Field,InputType,ObjectType,registerEnumType,} from '@nestjs/graphql';
-import { BeforeInsert, Column, Entity } from 'typeorm';
+import { BeforeInsert, BeforeUpdate, Column, Entity } from 'typeorm';
 import { IsBoolean, IsEmail, IsEnum, IsString, Length } from 'class-validator';
 import { CoreEntity } from 'src/common/entities/core.entity';
 import * as bcrypt from "bcrypt";
@@ -22,7 +22,8 @@ export class Users extends CoreEntity {
     @IsEmail()
     email: string;
   
-    @Column({ select: false })
+    //@Column({ select: false })
+    @Column()
     @Field(type => String)
     @IsString()
     password: string;
@@ -38,6 +39,7 @@ export class Users extends CoreEntity {
     verified: boolean;
   
     @BeforeInsert()
+    @BeforeUpdate()
     async hashPassword(): Promise<void> {
         try {
             this.password = await bcrypt.hash(this.password, 10);
@@ -45,5 +47,15 @@ export class Users extends CoreEntity {
             console.log(e);
             throw new InternalServerErrorException();
         }        
+    }
+
+    async checkPassword(aPassword:string): Promise<boolean> {
+        try {
+            const ok = await bcrypt.compare(aPassword, this.password);
+            return ok;
+        } catch(e) {
+            console.log(e);
+            throw new InternalServerErrorException();
+        }
     }
 }
