@@ -26,6 +26,7 @@ export class Users extends CoreEntity {
   @Column()
   @Field(() => String)
   @IsString()
+  @Length(4)
   password: string;
 
   @Column({ type: 'enum', enum: UserRole })

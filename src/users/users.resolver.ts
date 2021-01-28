@@ -4,7 +4,7 @@ import { LoginInput, LoginOutput } from './dtos/login.dto';
 import { Users } from './entities/users.entity';
 import { UserService } from './users.service';
 
-@Resolver((of) => Users)
+@Resolver(() => Users)
 export class UserResolver {
   constructor(private readonly usersService: UserService) {}
 
