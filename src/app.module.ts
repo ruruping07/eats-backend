@@ -17,11 +17,12 @@ import { Users } from './users/entities/users.entity';
       ignoreEnvFile: process.env.NODE_ENV === 'prod',
       validationSchema: Joi.object({
         NODE_ENV: Joi.string().valid('dev', 'prod', 'test').required(),
-        DB_HOST: Joi.string(),
-        DB_PORT: Joi.string(),
+        DB_HOST: Joi.string().required(),
+        DB_PORT: Joi.string().required().required(),
         DB_USERNAME: Joi.string(),
-        DB_PASSWORD: Joi.string(),
-        DB_NAME: Joi.string(),
+        DB_PASSWORD: Joi.string().required(),
+        DB_NAME: Joi.string().required(),
+        SECRET_KEY: Joi.string().required(),
       }),
     }),
     GraphQLModule.forRoot({

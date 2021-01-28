@@ -13,5 +13,4 @@ const pubsub = new PubSub();
   ],
   exports: [PUB_SUB],
 })
-
 export class CommonModule {}
