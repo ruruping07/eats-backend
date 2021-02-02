@@ -22,7 +22,6 @@ export class Users extends CoreEntity {
   @IsEmail()
   email: string;
 
-  //@Column({ select: false })
   @Column()
   @Field(() => String)
   @IsString()

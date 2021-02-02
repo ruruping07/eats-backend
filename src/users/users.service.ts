@@ -3,6 +3,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { CreateAccountInput, CreateAccountOutput } from './dtos/create-account.dto';
 import { LoginInput, LoginOutput } from './dtos/login.dto';
+import { EditProfileInput } from './dtos/edit-profile.dto';
 import { Users } from './entities/users.entity';
 import { JwtService } from 'src/jwt/jwt.service';
 
@@ -55,5 +56,18 @@ export class UserService {
 
   async findById(id: number): Promise<Users> {
     return this.users.findOne({ id });
+  }
+
+  async editProfile(userId: number, editProfileInout: EditProfileInput) {
+    const user = await this.users.findOne(userId);
+
+    if (editProfileInout.email) {
+      user.email = editProfileInout.email;
+    }
+    if (editProfileInout.password) {
+      user.password = editProfileInout.password;
+    }
+    //return this.users.save(userId, { ...editProfileInout });
+    return this.users.save(user);
   }
 }
