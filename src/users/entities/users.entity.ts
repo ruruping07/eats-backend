@@ -26,6 +26,7 @@ export class Users extends CoreEntity {
   @Field(() => String)
   @IsString()
   @Length(4)
+  @Column({ select: false })
   password: string;
 
   @Column({ type: 'enum', enum: UserRole })
@@ -41,11 +42,13 @@ export class Users extends CoreEntity {
   @BeforeInsert()
   @BeforeUpdate()
   async hashPassword(): Promise<void> {
-    try {
-      this.password = await bcrypt.hash(this.password, 10);
-    } catch (e) {
-      console.log(e);
-      throw new InternalServerErrorException();
+    if (this.password) {
+      try {
+        this.password = await bcrypt.hash(this.password, 10);
+      } catch (e) {
+        console.log(e);
+        throw new InternalServerErrorException();
+      }
     }
   }
 

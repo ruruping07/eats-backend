@@ -41,10 +41,7 @@ import { Verification } from './users/entities/verification.entity';
       database: process.env.DB_NAME,
       synchronize: process.env.NODE_ENV !== 'prod',
       logging: true,
-      entities: [
-        Users, 
-        Verification,
-      ],
+      entities: [Users, Verification],
     }),
     JwtModule.forRoot({
       privateKey: process.env.PRIVATE_KEY,
