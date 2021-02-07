@@ -9,13 +9,14 @@ import { Verification } from './entities/verification.entity';
 import { Users } from './entities/users.entity';
 import { VerifyEmailOutput } from './dtos/verify-email.dto';
 import { UserProfileOutput } from './dtos/user-profile.dt';
-
+import { MailService } from 'src/mail/mail.service';
 @Injectable()
 export class UserService {
   constructor(
     @InjectRepository(Users) private readonly user: Repository<Users>,
     @InjectRepository(Verification) private readonly verification: Repository<Verification>,
     private readonly jwtService: JwtService,
+    private readonly mailService: MailService,
   ) {}
 
   async createAccount({ email, password, role }: CreateAccountInput): Promise<CreateAccountOutput> {
@@ -27,7 +28,8 @@ export class UserService {
       }
 
       const users = await this.user.save(this.user.create({ email, password, role }));
-      await this.verification.save(this.verification.create({ users }));
+      const verifications = await this.verification.save(this.verification.create({ users }));
+      this.mailService.sendVerificationEmail(users.email, verifications.code);
 
       return { ok: true };
     } catch (e) {
@@ -61,7 +63,7 @@ export class UserService {
 
   async findById(id: number): Promise<UserProfileOutput> {
     try {
-      const users =  await this.user.findOne({ id });
+      const users = await this.user.findOne({ id });
 
       if (users) {
         return { ok: true, users };
@@ -70,22 +72,23 @@ export class UserService {
       console.log(e);
       return { ok: false, error: 'Error: editProfile' };
     }
-    
+
     return { ok: false, error: 'Error: User Not Found' };
   }
 
   async editProfile(userId: number, editProfileInout: EditProfileInput): Promise<EditProfileOutput> {
     const users = await this.user.findOne(userId, { select: ['id'] });
-    
+
     try {
       console.log('email : ' + editProfileInout.email);
 
       if (editProfileInout.email) {
         users.email = editProfileInout.email;
         users.verified = false;
-        
-        await this.user.save(users);
-        await this.verification.save(this.verification.create({ users }));
+
+        //await this.user.save(users);
+        const verifications = await this.verification.save(this.verification.create({ users }),);
+        this.mailService.sendVerificationEmail(users.email, verifications.code);
       }
 
       if (editProfileInout.password) {

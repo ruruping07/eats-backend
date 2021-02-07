@@ -36,12 +36,13 @@ export class UserResolver {
     return this.usersService.findById(userProfileInput.userId);
   }
 
-  @UseGuards(AuthGuard)
+  
   @Mutation(() => EditProfileOutput)
+  @UseGuards(AuthGuard)
   async editProfile(
     @AuthUser() authUser: Users,
-    @Args('input') editProfileInput: EditProfileInput,)
-    : Promise<EditProfileOutput> {
+    @Args('input') editProfileInput: EditProfileInput,
+  ): Promise<EditProfileOutput> {
     return this.usersService.editProfile(authUser.id, editProfileInput);
   }
 
