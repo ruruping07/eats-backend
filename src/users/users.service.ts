@@ -63,7 +63,7 @@ export class UserService {
 
   async findById(id: number): Promise<UserProfileOutput> {
     try {
-      const users = await this.user.findOne({ id });
+      const users = await this.user.findOneOrFail({ id });
 
       if (users) {
         return { ok: true, users };
@@ -87,7 +87,7 @@ export class UserService {
         users.verified = false;
 
         //await this.user.save(users);
-        const verifications = await this.verification.save(this.verification.create({ users }),);
+        const verifications = await this.verification.save(this.verification.create({ users }));
         this.mailService.sendVerificationEmail(users.email, verifications.code);
       }
 
