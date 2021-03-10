@@ -3,17 +3,23 @@ import { ConfigModule } from '@nestjs/config';
 import { GraphQLModule } from '@nestjs/graphql';
 import * as Joi from 'joi';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { UsersModule } from './users/users.module';
-import { Users } from './users/entities/users.entity';
-import { JwtModule } from './jwt/jwt.module';
-import { AuthModule } from './auth/auth.module';
-import { CommonModule } from './common/common.module';
-import { MailModule } from './mail/mail.module';
-import { JwtMiddleware } from './jwt/jwt.middleware';
+import { Dish } from './restaurants/entities/dish.entity';
 import { Verification } from './users/entities/verification.entity';
 import { Restaurant } from './restaurants/entities/restaurant.entity';
 import { Category } from './restaurants/entities/category.entity';
+import { Users } from './users/entities/users.entity';
+import { Order } from './orders/entities/order.entity';
+import { OrderItem } from './orders/entities/order-item.entity';
+import { UsersModule } from './users/users.module';
+import { JwtModule } from './jwt/jwt.module';
+import { AuthModule } from './auth/auth.module';
+import { CommonModule } from './common/common.module';
 import { RestaurantsModule } from './restaurants/restaurants.module';
+import { MailModule } from './mail/mail.module';
+import { OrdersModule } from './orders/orders.module';
+import { UploadsModule } from './uploads/uploads.module';
+import { PaymentsModule } from './payments/payments.module';
+import { JwtMiddleware } from './jwt/jwt.middleware';
 
 @Module({
   imports: [
@@ -35,8 +41,13 @@ import { RestaurantsModule } from './restaurants/restaurants.module';
       }),
     }),
     GraphQLModule.forRoot({
+      installSubscriptionHandlers: true,
       autoSchemaFile: true,
-      context: ({ req }) => ({ user: req['user'] }),
+      context: ({ req, connection }) => {
+        const TOKEN_KEY = 'x-jwt';
+
+        return { token: req ? req.headers[TOKEN_KEY] : connection.context[TOKEN_KEY], };
+      },      
     }),
     TypeOrmModule.forRoot({
       type: 'postgres',
@@ -47,7 +58,7 @@ import { RestaurantsModule } from './restaurants/restaurants.module';
       database: process.env.DB_NAME,
       synchronize: process.env.NODE_ENV !== 'prod',
       logging: true,
-      entities: [Users, Verification, Restaurant, Category],
+      entities: [Users, Verification, Restaurant, Category, Dish, Order, OrderItem],
     }),
     JwtModule.forRoot({
       privateKey: process.env.PRIVATE_KEY,
@@ -61,12 +72,13 @@ import { RestaurantsModule } from './restaurants/restaurants.module';
       domain: process.env.MAILGUN_DOMAIN_NAME,
       fromEmail: process.env.MAILGUN_FROM_EMAIL,
     }),
+    OrdersModule,
+    UploadsModule,
+    PaymentsModule,
+    OrdersModule,
   ],
   controllers: [],
   providers: [],
 })
-export class AppModule implements NestModule {
-  configure(consumer: MiddlewareConsumer) {
-    consumer.apply(JwtMiddleware).forRoutes({ path: '/graphql', method: RequestMethod.POST });
-  }
-}
+
+export class AppModule {}
