@@ -124,8 +124,12 @@ export class RestaurantService {
         where: {
           category,
         },
+        order: {
+          isPromoted: 'DESC',
+        },
         take: 25,
         skip: (page - 1) * 25,
+        
       });
 
       const totalResults = await this.countRestaurants(category);
@@ -168,6 +172,9 @@ export class RestaurantService {
         where: {
           name: Raw(name => `${name} ILIKE '%${query}%'`),
           //name: Like(`%${query}%`),
+        },
+        order: {
+          isPromoted: 'DESC',
         },
         skip: (page - 1) * 25,
         take: 25,

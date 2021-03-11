@@ -1,6 +1,7 @@
-import { MiddlewareConsumer, Module, NestModule, RequestMethod } from '@nestjs/common';
+import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { GraphQLModule } from '@nestjs/graphql';
+import { ScheduleModule } from '@nestjs/schedule';
 import * as Joi from 'joi';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { Dish } from './restaurants/entities/dish.entity';
@@ -10,6 +11,7 @@ import { Category } from './restaurants/entities/category.entity';
 import { Users } from './users/entities/users.entity';
 import { Order } from './orders/entities/order.entity';
 import { OrderItem } from './orders/entities/order-item.entity';
+import { Payment } from './payments/entities/payment.entity';
 import { UsersModule } from './users/users.module';
 import { JwtModule } from './jwt/jwt.module';
 import { AuthModule } from './auth/auth.module';
@@ -19,7 +21,6 @@ import { MailModule } from './mail/mail.module';
 import { OrdersModule } from './orders/orders.module';
 import { UploadsModule } from './uploads/uploads.module';
 import { PaymentsModule } from './payments/payments.module';
-import { JwtMiddleware } from './jwt/jwt.middleware';
 
 @Module({
   imports: [
@@ -58,8 +59,9 @@ import { JwtMiddleware } from './jwt/jwt.middleware';
       database: process.env.DB_NAME,
       synchronize: process.env.NODE_ENV !== 'prod',
       logging: true,
-      entities: [Users, Verification, Restaurant, Category, Dish, Order, OrderItem],
+      entities: [Users, Verification, Restaurant, Category, Dish, Order, OrderItem, Payment],
     }),
+    ScheduleModule.forRoot(),
     JwtModule.forRoot({
       privateKey: process.env.PRIVATE_KEY,
     }),
@@ -76,6 +78,7 @@ import { JwtMiddleware } from './jwt/jwt.middleware';
     UploadsModule,
     PaymentsModule,
     OrdersModule,
+    PaymentsModule,
   ],
   controllers: [],
   providers: [],
