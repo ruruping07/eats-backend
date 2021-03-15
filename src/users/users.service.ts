@@ -80,8 +80,6 @@ export class UserService {
     const users = await this.user.findOne(userId, { select: ['id'] });
 
     try {
-      console.log('email : ' + editProfileInout.email);
-
       if (editProfileInout.email) {
         users.email = editProfileInout.email;
         users.verified = false;
@@ -94,12 +92,13 @@ export class UserService {
       if (editProfileInout.password) {
         users.password = editProfileInout.password;
       }
+      await this.user.save(users);
+
+      return { ok: true };
     } catch (e) {
       console.log(e);
       return { ok: false, error: 'Error: editProfile' };
-    }
-
-    return { ok: true };
+    }    
   }
 
   async verifyEmail(code: string): Promise<VerifyEmailOutput> {
