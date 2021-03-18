@@ -11,12 +11,15 @@ import { SearchRestaurantInput, SearchRestaurantOutput,} from './dtos/search-res
 import { CreateDishInput, CreateDishOutput } from './dtos/create-dish.dto';
 import { DeleteDishInput, DeleteDishOutput } from './dtos/delete-dish.dto'
 import { EditDishInput, EditDishOutput } from './dtos/edit-dish.dto';
+import { MyRestaurantsOutput } from './dtos/my-restaurants.dto';
+import { MyRestaurantInput, MyRestaurantOutput } from './dtos/my-restaurant';
+import { AllCategoriesOutput } from './dtos/all-categories.dto';
 import { Restaurant } from './entities/restaurant.entity';
 import { Users } from 'src/users/entities/users.entity';
 import { Category } from './entities/category.entity';
 import { Dish } from './entities/dish.entity';
-import { AllCategoriesOutput } from './dtos/all-categories.dto';
 import { CategoryRepository } from './repositories/category.repository';
+
 
 @Injectable()
 export class RestaurantService {
@@ -39,9 +42,30 @@ export class RestaurantService {
       newRestaurant.category = category;
       await this.restaurants.save(newRestaurant);
       
-      return { ok: true, };
+      return { ok: true, restaurantId: newRestaurant.id, };
     } catch {
       return { ok: false, error: 'Could not create restaurant', };
+    }
+  }
+
+
+  async myRestaurants(owner: Users): Promise<MyRestaurantsOutput> {
+    try {
+      const restaurants = await this.restaurants.find({ owner });
+      return { restaurants, ok: true, };
+    } catch {
+      return { ok: false, error: 'Could not find restaurants.', };
+    }
+  }
+  async myRestaurant( owner: Users, { id }: MyRestaurantInput, ): Promise<MyRestaurantOutput> {
+    try {
+      const restaurant = await this.restaurants.findOne(
+        { owner, id },
+        { relations: ['menu', 'orders'] },
+      );
+      return { restaurant, ok: true, };
+    } catch {
+      return { ok: false, error: 'Could not find restaurant', };
     }
   }
 
@@ -127,14 +151,14 @@ export class RestaurantService {
         order: {
           isPromoted: 'DESC',
         },
-        take: 25,
-        skip: (page - 1) * 25,
+        take: 8,
+        skip: (page - 1) * 8,
         
       });
 
       const totalResults = await this.countRestaurants(category);
 
-      return { ok: true, restaurants, category, totalPages: Math.ceil(totalResults / 25), };
+      return { ok: true, restaurants, category, totalPages: Math.ceil(totalResults / 8), };
     } catch {
       return { ok: false, error: 'Could not load category', };
     }
@@ -143,10 +167,10 @@ export class RestaurantService {
   async allRestaurants({ page }: RestaurantsInput): Promise<RestaurantsOutput> {
     try {
       const [restaurants, totalResults] = await this.restaurants.findAndCount({
-        skip: (page - 1) * 25,
-        take: 25,
+        skip: (page - 1) * 8,
+        take: 8,
       });
-      return { ok: true, results: restaurants, totalPages: Math.ceil(totalResults / 25), totalResults, };
+      return { ok: true, results: restaurants, totalPages: Math.ceil(totalResults / 8), totalResults, };
     } catch {
       return { ok: false, error: 'Could not load restaurants', };
     }
@@ -154,7 +178,7 @@ export class RestaurantService {
 
   async findRestaurantById({ restaurantId, }: RestaurantInput): Promise<RestaurantOutput> {
     try {
-      const restaurant = await this.restaurants.findOne(restaurantId, { relations: ['menu'], });
+      const restaurant = await this.restaurants.findOne(restaurantId, { relations: ['menu', 'category'], });
 
       if (!restaurant) {
         return { ok: false, error: 'Restaurant not found', };
@@ -176,11 +200,11 @@ export class RestaurantService {
         order: {
           isPromoted: 'DESC',
         },
-        skip: (page - 1) * 25,
-        take: 25,
+        skip: (page - 1) * 8,
+        take: 8,
       });
 
-      return { ok: true, restaurants, totalResults, totalPages: Math.ceil(totalResults / 25), };
+      return { ok: true, restaurants, totalResults, totalPages: Math.ceil(totalResults / 8), };
     } catch {
       return { ok: false, error: 'Could not search for restaurants' };
     }

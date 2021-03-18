@@ -12,12 +12,16 @@ import { SearchRestaurantInput, SearchRestaurantOutput,} from './dtos/search-res
 import { CreateDishInput, CreateDishOutput } from './dtos/create-dish.dto';
 import { DeleteDishInput, DeleteDishOutput } from './dtos/delete-dish.dto'
 import { EditDishInput, EditDishOutput } from './dtos/edit-dish.dto';
+import { MyRestaurantsOutput } from './dtos/my-restaurants.dto';
+import { MyRestaurantInput, MyRestaurantOutput } from './dtos/my-restaurant';
 import { Role } from 'src/auth/role.decorator';
 import { Restaurant } from './entities/restaurant.entity';
 import { Users } from 'src/users/entities/users.entity';
 import { Category } from './entities/category.entity';
 import { Dish } from './entities/dish.entity';
 import { UseFilters } from '@nestjs/common';
+
+
 
 @Resolver(() => Restaurant)
 export class RestaurantResolver {
@@ -31,6 +35,21 @@ export class RestaurantResolver {
   ): Promise<CreateRestaurantOutput> {
     return this.restaurantService.createRestaurant(authUser, createRestaurantInput,);
   }
+
+  @Query(() => MyRestaurantsOutput)
+  @Role(['Owner'])
+  myRestaurants(@AuthUser() owner: Users): Promise<MyRestaurantsOutput> {
+    return this.restaurantService.myRestaurants(owner);
+  }
+
+  @Query(() => MyRestaurantOutput)
+  @Role(['Owner'])
+  myRestaurant(
+    @AuthUser() owner: Users,
+    @Args('input') myRestaurantInput: MyRestaurantInput,
+  ): Promise<MyRestaurantOutput> {
+    return this.restaurantService.myRestaurant(owner, myRestaurantInput);
+  }  
 
   @Mutation(() => EditRestaurantOutput)
   @Role(['Owner'])
@@ -57,14 +76,14 @@ export class RestaurantResolver {
     return this.restaurantService.allRestaurants(restaurantsInput);
   }
 
-  @Query(returns => RestaurantOutput)
+  @Query(() => RestaurantOutput)
   restaurant(
     @Args('input') restaurantInput: RestaurantInput,
   ): Promise<RestaurantOutput> {
     return this.restaurantService.findRestaurantById(restaurantInput);
   }
 
-  @Query(returns => SearchRestaurantOutput)
+  @Query(() => SearchRestaurantOutput)
   searchRestaurant(
     @Args('input') searchRestaurantInput: SearchRestaurantInput,
   ): Promise<SearchRestaurantOutput> {
