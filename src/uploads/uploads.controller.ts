@@ -2,7 +2,7 @@ import { Controller, Post, UploadedFile, UseInterceptors, } from '@nestjs/common
 import { FileInterceptor } from '@nestjs/platform-express';
 import * as AWS from 'aws-sdk';
 
-const BUCKET_NAME = 'ruping-temp';
+const BUCKET_NAME = '-';
 
 @Controller('uploads')
 export class UploadsController {
