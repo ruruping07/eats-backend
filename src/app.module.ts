@@ -39,6 +39,8 @@ import { PaymentsModule } from './payments/payments.module';
         MAILGUN_API_KEY: Joi.string().required(),
         MAILGUN_DOMAIN_NAME: Joi.string().required(),
         MAILGUN_FROM_EMAIL: Joi.string().required(),
+        AWS_ACCESS_ID: Joi.string().required(),
+        AWS_ACCESS_KEY: Joi.string().required(),
       }),
     }),
     GraphQLModule.forRoot({
