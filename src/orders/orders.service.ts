@@ -29,7 +29,7 @@ export class OrderService {
     private readonly pubSub: PubSub,
   ) {}
 
-  async crateOrder( customer: Users, { restaurantId, items }: CreateOrderInput, ): Promise<CreateOrderOutput> {
+  async createOrder( customer: Users, { restaurantId, items }: CreateOrderInput, ): Promise<CreateOrderOutput> {
     try {
       const restaurant = await this.restaurants.findOne(restaurantId);
 
@@ -50,7 +50,7 @@ export class OrderService {
         let dishFinalPrice = dish.price;
 
         for (const itemOption of item.options) {
-          const dishOption = dish.options.find( dishOption => dishOption.name === itemOption.name, );
+          const dishOption = dish.options?.find( dishOption => dishOption.name === itemOption.name, );
 
           if (dishOption) {
             if (dishOption.extra) {
@@ -76,7 +76,7 @@ export class OrderService {
       
       await this.pubSub.publish(NEW_PENDING_ORDER, { order, ownerId: restaurant.ownerId });
 
-      return { ok: true, };
+      return { ok: true, orderId: order.id, };
     } catch {
       return { ok: false, error: 'Could not create order.', };
     }
@@ -169,6 +169,8 @@ export class OrderService {
       }
 
       let canEdit = true;
+
+      console.log(user);
 
       if (user.role === UserRole.Client) {
         canEdit = false;
