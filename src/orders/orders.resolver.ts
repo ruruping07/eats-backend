@@ -60,14 +60,15 @@ export class OrderResolver {
   }
 */
   @Subscription(() => Order, {
-    //filter: (payload, _, context) => {
     filter: ({ pendingOrders: { ownerId } }, _, { user }) => { return ownerId === user.id; },
     resolve: ({ pendingOrders: { order } }) => order,
-    /*
-    filter: ({ readyPotato }, { potatoId }) => { return readyPotato === potatoId},
-    resolve: ({ readyPotato }) => `Your potato with the id ${readyPotato} is ready!`, 
-    */
   })
+
+  @Subscription(() => Order)
+  @Role(['Owner'])
+  pendingOrders() {
+    return this.pubSub.asyncIterator(NEW_PENDING_ORDER);
+  }
 
   @Subscription(() => Order)
   @Role(['Delivery'])
@@ -75,7 +76,7 @@ export class OrderResolver {
     return this.pubSub.asyncIterator(NEW_COOKED_ORDER);
   }
 
-  @Subscription(returns => Order, {
+  @Subscription(() => Order, {
     filter: (
       { orderUpdates: order }: { orderUpdates: Order },
       { input }: { input: OrderUpdatesInput },
@@ -91,13 +92,9 @@ export class OrderResolver {
       return order.id === input.id;
     },
   })
+
   @Role(['Any'])
   orderUpdates(@Args('input') orderUpdatesInput: OrderUpdatesInput) {
     return this.pubSub.asyncIterator(NEW_ORDER_UPDATE);
-  }
-
-  @Role(['Owner'])
-  pendingOrders() {
-    return this.pubSub.asyncIterator(NEW_PENDING_ORDER);
   }
 }
